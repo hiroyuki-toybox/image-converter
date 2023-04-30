@@ -51,15 +51,12 @@ fn convert_manager(path: &std::path::Path) -> Result<(), CliError> {
     let dir_item = path.read_dir().map_err(|_| CliError::NotADirectory)?;
 
     for item in dir_item {
-        let item = item.map_err(|_| CliError::NotADirectory)?;
-        let path = item.path();
+        let path = item.map_err(|_| CliError::NotADirectory)?.path();
         if path.is_dir() {
             convert_manager(&path)?;
-        }
-
-        if path.extension().unwrap() == "jpg" {
-            if let Err(e) = convert_jpg_to_png(&path) {
-                println!("failed convert {}, error: {}", path.to_str().unwrap(), e);
+        } else if let Some(extension) = path.extension() {
+            if extension == "jpg" {
+                convert_jpg_to_png(&path)?;
             }
         }
     }
